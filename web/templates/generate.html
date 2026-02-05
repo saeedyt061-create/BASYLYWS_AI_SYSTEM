@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}توليد كود - SAEED AI System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bold mb-4">
+            <i class="fas fa-magic text-primary me-2"></i>
+            توليد كود بالذكاء الاصطناعي
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Input Form -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-edit me-2"></i>
+                وصف الكود المطلوب
+            </div>
+            <div class="card-body">
+                <form id="generateForm">
+                    <div class="mb-3">
+                        <label class="form-label">الوصف</label>
+                        <textarea class="form-control" id="description" rows="4" 
+                            placeholder="صف ما تريد توليده... مثال: دالة لحساب العاملية"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">اللغة</label>
+                            <select class="form-select" id="language">
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="java">Java</option>
+                                <option value="cpp">C++</option>
+                                <option value="go">Go</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">النوع</label>
+                            <select class="form-select" id="codeType">
+                                <option value="function">دالة</option>
+                                <option value="class">فئة</option>
+                                <option value="script">سكربت</option>
+                                <option value="module">وحدة</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">مدخلات الدالة (اختياري)</label>
+                        <input type="text" class="form-control" id="inputSignature" 
+                            placeholder="مثال: n: int, name: str">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">مخرجات الدالة (اختياري)</label>
+                        <input type="text" class="form-control" id="outputSignature" 
+                            placeholder="مثال: int, List[str]">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">قيود (اختياري)</label>
+                        <input type="text" class="form-control" id="constraints" 
+                            placeholder="مثال: O(n) time, no recursion">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-magic me-2"></i>
+                        توليد الكود
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-bolt me-2"></i>
+                إجراءات سريعة
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="loadExample('factorial')">
+                        مثال: حساب العاملية
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="loadExample('sort')">
+                        مثال: ترتيب مصفوفة
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="loadExample('api')">
+                        مثال: نقطة API
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Output -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-code me-2"></i>
+                    الكود المولد
+                </span>
+                <div>
+                    <button class="btn btn-sm btn-light" id="copyBtn" onclick="copyCode()">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light" id="downloadBtn" onclick="downloadCode()">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <pre class="m-0"><code id="generatedCode" class="language-python"># الكود المولد سيظهر هنا...</code></pre>
+            </div>
+        </div>
+        
+        <!-- Quality Metrics -->
+        <div class="card mt-3" id="qualityCard" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-chart-bar me-2"></i>
+                مقاييس الجودة
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="quality-score" id="qualityScore">-</div>
+                        <small class="text-muted">درجة الجودة</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="quality-score" id="execTime">-</div>
+                        <small class="text-muted">وقت التنفيذ</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="quality-score" id="issuesCount">-</div>
+                        <small class="text-muted">المشاكل</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Explanation -->
+        <div class="card mt-3" id="explanationCard" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-info-circle me-2"></i>
+                شرح الكود
+            </div>
+            <div class="card-body">
+                <p id="explanationText" class="mb-0"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">جاري التوليد...</span>
+                </div>
+                <h5>جاري توليد الكود...</h5>
+                <p class="text-muted mb-0">قد يستغرق هذا بضع ثوانٍ</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const examples = {
+    factorial: {
+        description: "Calculate factorial of a number recursively",
+        language: "python",
+        type: "function",
+        input: "n: int",
+        output: "int"
+    },
+    sort: {
+        description: "Sort an array using quicksort algorithm",
+        language: "python",
+        type: "function",
+        input: "arr: List[int]",
+        output: "List[int]",
+        constraints: "O(n log n) time"
+    },
+    api: {
+        description: "Create a REST API endpoint for user authentication",
+        language: "python",
+        type: "function",
+        input: "username: str, password: str",
+        output: "Dict[str, Any]"
+    }
+};
+
+function loadExample(name) {
+    const ex = examples[name];
+    document.getElementById('description').value = ex.description;
+    document.getElementById('language').value = ex.language;
+    document.getElementById('codeType').value = ex.type;
+    document.getElementById('inputSignature').value = ex.input || '';
+    document.getElementById('outputSignature').value = ex.output || '';
+    document.getElementById('constraints').value = ex.constraints || '';
+}
+
+document.getElementById('generateForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    loadingModal.show();
+    
+    const data = {
+        description: document.getElementById('description').value,
+        language: document.getElementById('language').value,
+        type: document.getElementById('codeType').value,
+        input_signature: document.getElementById('inputSignature').value,
+        output_signature: document.getElementById('outputSignature').value,
+        constraints: document.getElementById('constraints').value ? 
+            document.getElementById('constraints').value.split(',') : []
+    };
+    
+    try {
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        loadingModal.hide();
+        
+        if (result.error) {
+            alert('خطأ: ' + result.error);
+            return;
+        }
+        
+        // عرض الكود
+        document.getElementById('generatedCode').textContent = result.generated_code;
+        
+        // عرض الجودة
+        document.getElementById('qualityCard').style.display = 'block';
+        document.getElementById('qualityScore').textContent = result.quality_score?.toFixed(1) || '-';
+        document.getElementById('execTime').textContent = (result.execution_time_ms / 1000).toFixed(2) + 's';
+        document.getElementById('issuesCount').textContent = result.issues?.length || 0;
+        
+        // عرض الشرح
+        if (result.explanation) {
+            document.getElementById('explanationCard').style.display = 'block';
+            document.getElementById('explanationText').textContent = result.explanation;
+        }
+        
+    } catch (error) {
+        loadingModal.hide();
+        alert('خطأ في الاتصال: ' + error.message);
+    }
+});
+
+function copyCode() {
+    const code = document.getElementById('generatedCode').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        alert('تم النسخ!');
+    });
+}
+
+function downloadCode() {
+    const code = document.getElementById('generatedCode').textContent;
+    const language = document.getElementById('language').value;
+    const extension = {python: 'py', javascript: 'js', java: 'java', cpp: 'cpp', go: 'go'}[language];
+    
+    const blob = new Blob([code], {type: 'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `generated_code.${extension}`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

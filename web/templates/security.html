@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}الأمان - SAEED AI System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bold mb-4">
+            <i class="fas fa-shield-alt text-danger me-2"></i>
+            فحص أمني
+        </h2>
+    </div>
+</div>
+
+<!-- Warning -->
+<div class="alert alert-warning mb-4">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <strong>تحذير قانوني:</strong> هذه الأداة للاستخدام القانوني فقط. 
+    يجب الحصول على إذن كتابي من مالك النظام قبل الاستخدام.
+</div>
+
+<div class="row">
+    <!-- Scan Form -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-crosshairs me-2"></i>
+                إعدادات الفحص
+            </div>
+            <div class="card-body">
+                <form id="scanForm">
+                    <div class="mb-3">
+                        <label class="form-label">الهدف (IP/نطاق)</label>
+                        <input type="text" class="form-control" id="target" 
+                            placeholder="192.168.1.1">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">ملف النطاق (Scope)</label>
+                        <input type="file" class="form-control" id="scopeFile" accept=".json">
+                        <small class="text-muted">ملف JSON موقع رقمياً</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">شدة الفحص</label>
+                        <select class="form-select" id="intensity">
+                            <option value="quick">سريع (5 منافذ)</option>
+                            <option value="normal" selected>عادي (15 منفذ)</option>
+                            <option value="thorough">شامل (1000+ منفذ)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">المنافذ المخصصة (اختياري)</label>
+                        <input type="text" class="form-control" id="customPorts" 
+                            placeholder="80,443,8080">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="fas fa-play me-2"></i>
+                        بدء الفحص
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Scope Generator -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <i class="fas fa-file-signature me-2"></i>
+                مُنشئ النطاق
+            </div>
+            <div class="card-body">
+                <form id="scopeForm">
+                    <div class="mb-3">
+                        <label class="form-label">المنظمة</label>
+                        <input type="text" class="form-control" id="orgName" 
+                            placeholder="اسم الشركة">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">IPs المصرحة (فاصلة)</label>
+                        <input type="text" class="form-control" id="authorizedIps" 
+                            placeholder="192.168.1.0/24, 10.0.0.5">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">الغرض</label>
+                        <textarea class="form-control" id="purpose" rows="2"
+                            placeholder="تقييم أمني ربع سنوي"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">بريد التواصل</label>
+                        <input type="email" class="form-control" id="contactEmail" 
+                            placeholder="security@company.com">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">مدة الصلاحية (أيام)</label>
+                        <input type="number" class="form-control" id="duration" 
+                            value="7" min="1" max="365">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-plus me-2"></i>
+                        إنشاء نطاق
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="col-lg-8">
+        <!-- Scan Progress -->
+        <div class="card mb-3" id="progressCard" style="display: none;">
+            <div class="card-body">
+                <h6>جاري الفحص...</h6>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         id="scanProgress" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary -->
+        <div class="card mb-3" id="summaryCard" style="display: none;">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-clipboard-list me-2"></i>
+                ملخص النتائج
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="display-4 fw-bold" id="riskScore">-</div>
+                        <small class="text-muted">درجة المخاطرة</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="display-4 fw-bold text-danger" id="criticalCount">-</div>
+                        <small class="text-muted">حرجة</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="display-4 fw-bold text-warning" id="highCount">-</div>
+                        <small class="text-muted">عالية</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="display-4 fw-bold text-info" id="totalFindings">-</div>
+                        <small class="text-muted">إجمالي</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Findings -->
+        <div class="card" id="findingsCard" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-bug me-2"></i>
+                النتائج المفصلة
+            </div>
+            <div class="card-body p-0">
+                <div class="accordion" id="findingsAccordion">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="card" id="emptyCard">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-shield-alt fa-5x text-muted mb-3"></i>
+                <h5 class="text-muted">لم يتم بدء فحص بعد</h5>
+                <p class="text-muted">أدخل إعدادات الفحص واضغط "بدء الفحص"</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Download Report Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">اكتمل الفحص</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>تم إنشاء تقرير الأمان. يمكنك تحميله الآن.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                <button type="button" class="btn btn-primary" onclick="downloadReport()">
+                    <i class="fas fa-download me-2"></i>
+                    تحميل التقرير
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let lastScanResult = null;
+
+document.getElementById('scanForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const target = document.getElementById('target').value;
+    if (!target) {
+        alert('الرجاء إدخال الهدف');
+        return;
+    }
+    
+    document.getElementById('emptyCard').style.display = 'none';
+    document.getElementById('progressCard').style.display = 'block';
+    
+    // محاكاة التقدم
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += 10;
+        document.getElementById('scanProgress').style.width = progress + '%';
+        if (progress >= 100) clearInterval(progressInterval);
+    }, 500);
+    
+    // في الواقع، هنا سيتم إرسال طلب للخادم
+    setTimeout(() => {
+        clearInterval(progressInterval);
+        document.getElementById('progressCard').style.display = 'none';
+        
+        // عرض نتائج وهمية للتوضيح
+        showMockResults();
+        
+        const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+        modal.show();
+    }, 5000);
+});
+
+document.getElementById('scopeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const scopeData = {
+        organization: document.getElementById('orgName').value,
+        ips: document.getElementById('authorizedIps').value.split(',').map(s => s.trim()),
+        purpose: document.getElementById('purpose').value,
+        contact: document.getElementById('contactEmail').value,
+        duration: parseInt(document.getElementById('duration').value)
+    };
+    
+    // إنشاء ملف JSON
+    const blob = new Blob([JSON.stringify(scopeData, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SCOPE_${scopeData.organization.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    alert('تم إنشاء ملف النطاق!');
+});
+
+function showMockResults() {
+    lastScanResult = {
+        risk_score: 45,
+        critical_findings: 1,
+        high_findings: 2,
+        findings_count: 5,
+        findings: [
+            {
+                severity: 'CRITICAL',
+                cve_id: 'CVE-2014-0160',
+                title: 'Heartbleed Vulnerability',
+                description: 'خادم SSL معرض لثغرة Heartbleed',
+                remediation: 'حدّث OpenSSL إلى 1.0.1g أو أعلى',
+                port: 443,
+                service: 'HTTPS'
+            },
+            {
+                severity: 'HIGH',
+                cve_id: 'CVE-2020-15778',
+                title: 'OpenSSH Vulnerable Version',
+                description: 'SSH نسخة قديمة معروفة بثغرات',
+                remediation: 'حدّث OpenSSH إلى إصدار 8.0',
+                port: 22,
+                service: 'SSH'
+            },
+            {
+                severity: 'HIGH',
+                cve_id: null,
+                title: 'Missing Security Headers',
+                description: 'رؤوس أمنية مفقودة',
+                remediation: 'أضف X-Frame-Options و CSP',
+                port: 80,
+                service: 'HTTP'
+            }
+        ]
+    };
+    
+    document.getElementById('summaryCard').style.display = 'block';
+    document.getElementById('findingsCard').style.display = 'block';
+    
+    document.getElementById('riskScore').textContent = lastScanResult.risk_score;
+    document.getElementById('criticalCount').textContent = lastScanResult.critical_findings;
+    document.getElementById('highCount').textContent = lastScanResult.high_findings;
+    document.getElementById('totalFindings').textContent = lastScanResult.findings_count;
+    
+    const accordion = document.getElementById('findingsAccordion');
+    accordion.innerHTML = lastScanResult.findings.map((finding, index) => `
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button ${index > 0 ? 'collapsed' : ''}" 
+                        type="button" data-bs-toggle="collapse" 
+                        data-bs-target="#finding${index}">
+                    <span class="badge bg-${getSeverityColor(finding.severity)} me-2">
+                        ${finding.severity}
+                    </span>
+                    ${finding.title}
+                    ${finding.cve_id ? `<span class="badge bg-dark ms-2">${finding.cve_id}</span>` : ''}
+                </button>
+            </h2>
+            <div id="finding${index}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}">
+                <div class="accordion-body">
+                    <p><strong>الوصف:</strong> ${finding.description}</p>
+                    <p><strong>المنفذ:</strong> ${finding.port} (${finding.service})</p>
+                    <div class="alert alert-info">
+                        <strong>الحل:</strong> ${finding.remediation}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getSeverityColor(severity) {
+    const colors = {
+        'CRITICAL': 'danger',
+        'HIGH': 'warning',
+        'MEDIUM': 'info',
+        'LOW': 'secondary',
+        'INFO': 'primary'
+    };
+    return colors[severity] || 'secondary';
+}
+
+function downloadReport() {
+    if (!lastScanResult) return;
+    
+    const report = {
+        ...lastScanResult,
+        scan_time: new Date().toISOString(),
+        target: document.getElementById('target').value
+    };
+    
+    const blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SECURITY_AUDIT_${document.getElementById('target').value}_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

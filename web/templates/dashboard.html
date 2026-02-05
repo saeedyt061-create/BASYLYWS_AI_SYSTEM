@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التحكم - SAEED AI System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bold mb-4">
+            <i class="fas fa-chart-line text-info me-2"></i>
+            لوحة التحكم
+        </h2>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">إجمالي التوليدات</h6>
+                        <h3 class="mb-0" id="totalGenerations">-</h3>
+                    </div>
+                    <i class="fas fa-magic fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">متوسط الجودة</h6>
+                        <h3 class="mb-0" id="avgQuality">-</h3>
+                    </div>
+                    <i class="fas fa-star fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">الثغرات المكتشفة</h6>
+                        <h3 class="mb-0" id="totalVulns">-</h3>
+                    </div>
+                    <i class="fas fa-bug fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">التوليدات اليوم</h6>
+                        <h3 class="mb-0" id="todayGenerations">-</h3>
+                    </div>
+                    <i class="fas fa-calendar-day fa-2x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-code me-2"></i>
+                اللغات الأكثر استخداماً
+            </div>
+            <div class="card-body">
+                <canvas id="languagesChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-shield-alt me-2"></i>
+                الثغرات حسب الخطورة
+            </div>
+            <div class="card-body">
+                <canvas id="vulnsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="fas fa-history me-2"></i>
+                    النشاط الأخير
+                </span>
+                <button class="btn btn-sm btn-outline-primary" onclick="loadActivity()">
+                    <i class="fas fa-sync"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>النوع</th>
+                                <th>الوصف</th>
+                                <th>الجودة</th>
+                                <th>الوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTable">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">جاري التحميل...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Status -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-cogs me-2"></i>
+                حالة النماذج
+            </div>
+            <div class="card-body">
+                <div id="modelsStatus">
+                    <div class="text-center py-3">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">جاري التحميل...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// تحميل الإحصائيات
+async function loadStats() {
+    try {
+        const response = await fetch('/api/dashboard/stats');
+        const data = await response.json();
+        
+        document.getElementById('totalGenerations').textContent = data.total_generations || 0;
+        document.getElementById('avgQuality').textContent = (data.average_quality || 0).toFixed(1);
+        document.getElementById('totalVulns').textContent = data.total_vulnerabilities || 0;
+        document.getElementById('todayGenerations').textContent = data.today_generations || 0;
+        
+        // رسم بياني للغات
+        if (data.top_languages) {
+            const ctx = document.getElementById('languagesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.top_languages.map(l => l.language),
+                    datasets: [{
+                        data: data.top_languages.map(l => l.count),
+                        backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // رسم بياني للثغرات
+        if (data.vulnerabilities_by_severity) {
+            const ctx = document.getElementById('vulnsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data.vulnerabilities_by_severity),
+                    datasets: [{
+                        label: 'الثغرات',
+                        data: Object.values(data.vulnerabilities_by_severity),
+                        backgroundColor: ['#dc3545', '#ffc107', '#17a2b8', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+// تحميل النشاط
+async function loadActivity() {
+    try {
+        const response = await fetch('/api/dashboard/activity');
+        const data = await response.json();
+        
+        const tbody = document.getElementById('activityTable');
+        
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا يوجد نشاط</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = data.map(item => `
+            <tr>
+                <td>
+                    <span class="badge bg-${item.type === 'generation' ? 'primary' : 'success'}">
+                        ${item.type === 'generation' ? 'توليد' : 'تحليل'}
+                    </span>
+                </td>
+                <td>${item.description?.substring(0, 50) || '-'}...</td>
+                <td>${item.quality_score?.toFixed(1) || '-'}</td>
+                <td>${new Date(item.created_at).toLocaleString('ar-SA')}</td>
+            </tr>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading activity:', error);
+    }
+}
+
+// تحميل حالة النماذج
+async function loadModelsStatus() {
+    try {
+        const response = await fetch('/api/models/info');
+        const data = await response.json();
+        
+        const html = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>النماذج المحملة:</h6>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between">
+                            Software Classifier
+                            <span class="badge bg-${data.software_classifier ? 'success' : 'secondary'}">
+                                ${data.software_classifier ? 'جاهز' : 'غير محمل'}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            Bug Predictor
+                            <span class="badge bg-${data.bug_predictor ? 'success' : 'secondary'}">
+                                ${data.bug_predictor ? 'جاهز' : 'غير محمل'}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            Performance Model
+                            <span class="badge bg-${data.performance_model ? 'success' : 'secondary'}">
+                                ${data.performance_model ? 'جاهز' : 'غير محمل'}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            Vulnerability Detector
+                            <span class="badge bg-${data.vulnerability_detector ? 'success' : 'secondary'}">
+                                ${data.vulnerability_detector ? 'جاهز' : 'غير محمل'}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>معلومات:</h6>
+                    <p><strong>مجلد النماذج:</strong> ${data.models_directory}</p>
+                    <p><strong>النماذج المتاحة:</strong></p>
+                    <ul>
+                        ${data.available_models?.map(m => `<li>${m}</li>`).join('') || '<li>لا يوجد</li>'}
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('modelsStatus').innerHTML = html;
+        
+    } catch (error) {
+        document.getElementById('modelsStatus').innerHTML = `
+            <div class="alert alert-danger">خطأ في تحميل حالة النماذج</div>
+        `;
+    }
+}
+
+// تحميل عند بدء الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+    loadActivity();
+    loadModelsStatus();
+});
+</script>
+{% endblock %}

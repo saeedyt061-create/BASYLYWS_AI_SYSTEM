@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}الرئيسية - SAEED AI System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row align-items-center py-5">
+    <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-4">
+            <span class="text-primary">SAEED</span> AI System
+        </h1>
+        <p class="lead text-muted mb-4">
+            منظومة ذكاء اصطناعي متكاملة لتوليد وتحليل وتحسين الكود البرمجي
+            مع قدرات أمنية متقدمة
+        </p>
+        <div class="d-flex gap-3">
+            <a href="/generate" class="btn btn-primary btn-lg">
+                <i class="fas fa-magic me-2"></i>
+                ابدأ التوليد
+            </a>
+            <a href="/analyze" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-search me-2"></i>
+                حلل كودك
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-6 text-center">
+        <div class="hero-icon">
+            <i class="fas fa-robot fa-10x text-primary opacity-25"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row py-5">
+    <div class="col-12 text-center mb-5">
+        <h2 class="fw-bold">الميزات الرئيسية</h2>
+        <p class="text-muted">كل ما تحتاجه لتطوير برمجيات عالية الجودة</p>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-magic fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">توليد كود ذكي</h5>
+                <p class="card-text text-muted">
+                    توليد كود تلقائي من الوصف الطبيعي مع دعم عدة لغات برمجية
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-brain fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">تحليل ML</h5>
+                <p class="card-text text-muted">
+                    تصنيف البرمجيات وتنبؤ الأخطاء واكتشاف الثغرات بالذكاء الاصطناعي
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 feature-card">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-shield-alt fa-3x text-danger"></i>
+                </div>
+                <h5 class="card-title">فحص أمني</h5>
+                <p class="card-text text-muted">
+                    اكتشاف الثغرات الأمنية وCVEs المعروفة مع تقارير مفصلة
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row py-5 bg-light rounded">
+    <div class="col-12 text-center mb-4">
+        <h3 class="fw-bold">إحصائيات النظام</h3>
+    </div>
+    <div class="col-md-3 text-center">
+        <div class="stat-number" id="stat-generations">-</div>
+        <div class="stat-label">توليد</div>
+    </div>
+    <div class="col-md-3 text-center">
+        <div class="stat-number" id="stat-analyses">-</div>
+        <div class="stat-label">تحليل</div>
+    </div>
+    <div class="col-md-3 text-center">
+        <div class="stat-number" id="stat-vulns">-</div>
+        <div class="stat-label">ثغرة مكتشفة</div>
+    </div>
+    <div class="col-md-3 text-center">
+        <div class="stat-number" id="stat-quality">-</div>
+        <div class="stat-label">متوسط الجودة</div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row py-5">
+    <div class="col-12 text-center mb-4">
+        <h3 class="fw-bold">إجراءات سريعة</h3>
+    </div>
+    <div class="col-md-6 mb-3">
+        <a href="/generate" class="btn btn-outline-primary w-100 py-3">
+            <i class="fas fa-plus-circle fa-2x mb-2 d-block"></i>
+            توليد كود جديد
+        </a>
+    </div>
+    <div class="col-md-6 mb-3">
+        <a href="/analyze" class="btn btn-outline-success w-100 py-3">
+            <i class="fas fa-microscope fa-2x mb-2 d-block"></i>
+            تحليل كود
+        </a>
+    </div>
+    <div class="col-md-6 mb-3">
+        <a href="/security" class="btn btn-outline-danger w-100 py-3">
+            <i class="fas fa-bug fa-2x mb-2 d-block"></i>
+            فحص أمني
+        </a>
+    </div>
+    <div class="col-md-6 mb-3">
+        <a href="/dashboard" class="btn btn-outline-info w-100 py-3">
+            <i class="fas fa-chart-pie fa-2x mb-2 d-block"></i>
+            لوحة التحكم
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// تحميل الإحصائيات
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/dashboard/stats')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('stat-generations').textContent = data.total_generations || 0;
+            document.getElementById('stat-analyses').textContent = data.total_analyses || 0;
+            document.getElementById('stat-vulns').textContent = data.total_vulnerabilities || 0;
+            document.getElementById('stat-quality').textContent = (data.average_quality || 0).toFixed(1);
+        })
+        .catch(error => {
+            console.log('Error loading stats:', error);
+        });
+});
+</script>
+{% endblock %}

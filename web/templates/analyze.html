@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}تحليل كود - SAEED AI System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bold mb-4">
+            <i class="fas fa-search text-success me-2"></i>
+            تحليل الكود
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Input -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-code me-2"></i>
+                أدخل الكود للتحليل
+            </div>
+            <div class="card-body">
+                <textarea class="form-control code-input" id="codeInput" rows="20" 
+                    placeholder="الصق كودك هنا..."></textarea>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-success" onclick="analyzeCode()">
+                        <i class="fas fa-microscope me-2"></i>
+                        تحليل
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="loadSampleCode()">
+                        <i class="fas fa-file-code me-2"></i>
+                        تحميل كود تجريبي
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="col-lg-6">
+        <!-- Quality Score -->
+        <div class="card mb-3" id="scoreCard" style="display: none;">
+            <div class="card-body text-center">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="score-circle" id="qualityScore">-</div>
+                        <small class="text-muted">الجودة</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="score-circle" id="maintainabilityScore">-</div>
+                        <small class="text-muted">الصيانة</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="score-circle" id="reliabilityScore">-</div>
+                        <small class="text-muted">الموثوقية</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Metrics -->
+        <div class="card mb-3" id="metricsCard" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-ruler me-2"></i>
+                المقاييس
+            </div>
+            <div class="card-body">
+                <div class="row" id="metricsRow">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Code Smells -->
+        <div class="card mb-3" id="smellsCard" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                روائح الكود
+            </div>
+            <div class="card-body">
+                <div id="smellsList">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Issues -->
+        <div class="card mb-3" id="issuesCard" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-bug me-2"></i>
+                المشاكل
+            </div>
+            <div class="card-body">
+                <div id="issuesList">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Classification -->
+        <div class="card mb-3" id="classificationCard" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-brain me-2"></i>
+                تصنيف ML
+            </div>
+            <div class="card-body">
+                <div id="classificationResult">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vulnerabilities -->
+        <div class="card mb-3" id="vulnsCard" style="display: none;">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-shield-alt me-2"></i>
+                الثغرات الأمنية
+            </div>
+            <div class="card-body">
+                <div id="vulnsList">
+                    <!-- سيتم ملؤها ديناميكياً -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading -->
+<div id="loadingIndicator" class="text-center py-5" style="display: none;">
+    <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">جاري التحليل...</span>
+    </div>
+    <p class="mt-2 text-muted">جاري تحليل الكود...</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const sampleCode = `def calculate_factorial(n):
+    """Calculate factorial of n"""
+    if n == 0:
+        return 1
+    else:
+        return n * calculate_factorial(n-1)
+
+class DataProcessor:
+    def __init__(self):
+        self.data = []
+    
+    def process(self, items):
+        for item in items:
+            if item > 0:
+                if item % 2 == 0:
+                    self.data.append(item * 2)
+        return self.data
+
+# API Key - should not be here
+API_KEY = "sk-1234567890abcdef"
+
+def login(username, password):
+    query = f"SELECT * FROM users WHERE name = '{username}'"
+    return query
+`;
+
+function loadSampleCode() {
+    document.getElementById('codeInput').value = sampleCode;
+}
+
+async function analyzeCode() {
+    const code = document.getElementById('codeInput').value;
+    
+    if (!code.trim()) {
+        alert('الرجاء إدخال كود للتحليل');
+        return;
+    }
+    
+    document.getElementById('loadingIndicator').style.display = 'block';
+    
+    try {
+        // تحليل أساسي
+        const analysisResponse = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({code: code})
+        });
+        
+        const analysis = await analysisResponse.json();
+        
+        // تصنيف
+        const classifyResponse = await fetch('/api/classify', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({code: code})
+        });
+        
+        const classification = await classifyResponse.json();
+        
+        // كشف الثغرات
+        const vulnResponse = await fetch('/api/detect-vulnerabilities', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({code: code})
+        });
+        
+        const vulnerabilities = await vulnResponse.json();
+        
+        displayResults(analysis, classification, vulnerabilities);
+        
+    } catch (error) {
+        alert('خطأ: ' + error.message);
+    } finally {
+        document.getElementById('loadingIndicator').style.display = 'none';
+    }
+}
+
+function displayResults(analysis, classification, vulnerabilities) {
+    // درجات الجودة
+    document.getElementById('scoreCard').style.display = 'block';
+    document.getElementById('qualityScore').textContent = analysis.quality_score?.toFixed(0) || '-';
+    document.getElementById('maintainabilityScore').textContent = 
+        analysis.quality_details?.maintainability_index?.toFixed(0) || '-';
+    document.getElementById('reliabilityScore').textContent = 
+        analysis.quality_details?.reliability_score?.toFixed(0) || '-';
+    
+    // المقاييس
+    if (analysis.metrics) {
+        document.getElementById('metricsCard').style.display = 'block';
+        const metricsHtml = Object.entries(analysis.metrics).map(([key, value]) => `
+            <div class="col-6 mb-2">
+                <small class="text-muted">${key.replace(/_/g, ' ')}</small>
+                <div class="fw-bold">${typeof value === 'number' ? value.toFixed(1) : value}</div>
+            </div>
+        `).join('');
+        document.getElementById('metricsRow').innerHTML = metricsHtml;
+    }
+    
+    // روائح الكود
+    if (analysis.code_smells?.length > 0) {
+        document.getElementById('smellsCard').style.display = 'block';
+        const smellsHtml = analysis.code_smells.map(smell => `
+            <div class="alert alert-${getSeverityClass(smell.severity)} mb-2">
+                <strong>${smell.type}</strong>: ${smell.message}
+                <br><small>${smell.suggestion}</small>
+            </div>
+        `).join('');
+        document.getElementById('smellsList').innerHTML = smellsHtml;
+    }
+    
+    // المشاكل
+    if (analysis.issues?.length > 0) {
+        document.getElementById('issuesCard').style.display = 'block';
+        const issuesHtml = analysis.issues.map(issue => `
+            <div class="alert alert-${getSeverityClass(issue.severity)} mb-2">
+                <strong>سطر ${issue.line}</strong>: ${issue.message}
+                <br><small>${issue.suggestion}</small>
+            </div>
+        `).join('');
+        document.getElementById('issuesList').innerHTML = issuesHtml;
+    }
+    
+    // التصنيف
+    if (!classification.error) {
+        document.getElementById('classificationCard').style.display = 'block';
+        document.getElementById('classificationResult').innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                    <h5 class="mb-1">${classification.category}</h5>
+                    <small class="text-muted">ثقة: ${(classification.confidence * 100).toFixed(1)}%</small>
+                </div>
+            </div>
+            ${classification.top_3 ? `
+                <hr>
+                <small class="text-muted">أفضل 3 تخمينات:</small>
+                <ul class="list-unstyled mb-0 mt-1">
+                    ${classification.top_3.map(cat => `
+                        <li><span class="badge bg-secondary">${cat[0]}</span> ${(cat[1] * 100).toFixed(1)}%</li>
+                    `).join('')}
+                </ul>
+            ` : ''}
+        `;
+    }
+    
+    // الثغرات
+    if (vulnerabilities.is_vulnerable) {
+        document.getElementById('vulnsCard').style.display = 'block';
+        const vulnsHtml = vulnerabilities.vulnerabilities_found.map(vuln => `
+            <div class="alert alert-danger mb-2">
+                <strong>${vuln.type}</strong>
+                <span class="badge bg-${vuln.severity === 'CRITICAL' ? 'danger' : 'warning'} ms-2">
+                    ${vuln.severity}
+                </span>
+                <p class="mb-1">${vuln.description}</p>
+                <small><strong>الحل:</strong> ${vuln.fix}</small>
+            </div>
+        `).join('');
+        document.getElementById('vulnsList').innerHTML = vulnsHtml;
+    }
+}
+
+function getSeverityClass(severity) {
+    const classes = {
+        'ERROR': 'danger',
+        'CRITICAL': 'danger',
+        'HIGH': 'danger',
+        'WARNING': 'warning',
+        'MEDIUM': 'warning',
+        'INFO': 'info',
+        'LOW': 'info'
+    };
+    return classes[severity] || 'secondary';
+}
+</script>
+{% endblock %}

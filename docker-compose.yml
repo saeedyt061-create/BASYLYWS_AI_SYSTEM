@@ -1,0 +1,65 @@
+# SAEED AI System - Docker Compose
+# ================================
+
+version: '3.8'
+
+services:
+  # Main Application
+  saeed-ai:
+    build: .
+    container_name: saeed-ai
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./keys:/app/keys
+      - ./logs:/app/logs
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - saeed-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: saeed-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - saeed-network
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: saeed-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - saeed-ai
+    restart: unless-stopped
+    networks:
+      - saeed-network
+
+volumes:
+  redis-data:
+
+networks:
+  saeed-network:
+    driver: bridge

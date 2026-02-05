@@ -1,0 +1,274 @@
+/* SAEED AI System - Custom Styles */
+
+:root {
+    --primary-color: #007bff;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Hero Section */
+.hero-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+/* Feature Cards */
+.feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Stats */
+.stat-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Stat Cards */
+.stat-card {
+    border: none;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: scale(1.02);
+}
+
+/* Code Input */
+.code-input {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    direction: ltr;
+    text-align: left;
+}
+
+/* Quality Score */
+.quality-score {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.score-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto 10px;
+}
+
+/* Pre/Code Blocks */
+pre {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+    overflow-x: auto;
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    direction: ltr;
+    text-align: left;
+}
+
+/* Alerts */
+.alert {
+    border: none;
+    border-radius: 8px;
+}
+
+/* Progress */
+.progress {
+    height: 25px;
+    border-radius: 12px;
+}
+
+/* Accordion */
+.accordion-button {
+    font-weight: 500;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e7f1ff;
+}
+
+/* Tables */
+.table {
+    font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-lg {
+    padding: 12px 30px;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Forms */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Loading Spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .hero-icon {
+        display: none;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #1a1a2e;
+        color: #eee;
+    }
+    
+    .card {
+        background-color: #16213e;
+        color: #eee;
+    }
+    
+    .form-control, .form-select {
+        background-color: #0f3460;
+        color: #eee;
+        border-color: #533483;
+    }
+    
+    pre {
+        background-color: #0f3460;
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
