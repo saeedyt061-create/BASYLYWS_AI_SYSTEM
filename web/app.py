@@ -36,17 +36,24 @@ CORS(app)
 
 # تهيئة المحركات
 engines = {}
+_is_initialized = False  # متغير للتحقق من التهيئة
 
-@app.before_first_request
+@app.before_request
 def init_engines():
-    """تهيئة المحركات قبل أول طلب"""
-    if MODULES_AVAILABLE:
-        print("🚀 تهيئة المحركات...")
-        engines['generator'] = CodeGenEngine(use_cache=True)
-        engines['ml'] = CodeMLEngine()
-        engines['analyzer'] = SmartCodeAnalyzer()
-        engines['db'] = LearningDatabase()
-        print("✅ المحركات جاهزة")
+    """تهيئة المحركات عند أول طلب (بديل لـ before_first_request)"""
+    global _is_initialized
+    if not _is_initialized:
+        if MODULES_AVAILABLE:
+            print("🚀 تهيئة المحركات...")
+            try:
+                engines['generator'] = CodeGenEngine(use_cache=True)
+                engines['ml'] = CodeMLEngine()
+                engines['analyzer'] = SmartCodeAnalyzer()
+                engines['db'] = LearningDatabase()
+                print("✅ المحركات جاهزة")
+            except Exception as e:
+                print(f"❌ خطأ أثناء تهيئة المحركات: {e}")
+        _is_initialized = True
 
 # ========== الصفحات الرئيسية ==========
 
@@ -349,3 +356,4 @@ if __name__ == '__main__':
         debug=True,
         threaded=True
     )
+
