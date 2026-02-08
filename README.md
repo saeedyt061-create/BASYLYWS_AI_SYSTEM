@@ -41,7 +41,7 @@
 # استنساخ المستودع
 git clone https://github.com/saeedyt061-create/BASYLYWS_AI_SYSTEM.git
 
-cd saeed-ai
+cd BASYLYWS_AI_SYSTEM
 
 # تثبيت المتطلبات
 pip install -r requirements.txt
