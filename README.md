@@ -94,10 +94,10 @@ open http://localhost:5000
 
 ```bash
 # بناء الصورة
-docker build -t saeed-ai .
+docker build -t  BASYLYWS_AI_SYSTEM
 
 # تشغيل
-docker run -p 5000:5000 saeed-ai
+docker run -p 5000:5000 BBASYLYWS_AI_SYSTEM
 
 # أو استخدام Docker Compose
 docker-compose up -d
@@ -106,7 +106,7 @@ docker-compose up -d
 ## 📁 هيكل المشروع
 
 ```
-saeed_ai_system/
+BASYLYWS_AI_SYSTEM/
 ├── src/                      # الكود المصدري
 │   ├── __init__.py
 │   ├── code_generator.py     # مولد الكود
@@ -232,7 +232,7 @@ http://localhost:5000/dashboard
 
 ## 👨‍💻 المطور
 
-**SAEED AI Team**
+**BASYLYWS AI Team**
 
 ---
 
