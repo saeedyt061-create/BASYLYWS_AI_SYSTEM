@@ -39,7 +39,8 @@
 
 ```bash
 # استنساخ المستودع
-git clone https://github.com/yourusername/saeed-ai.git
+git clone https://github.com/saeedyt061-create/BASYLYWS_AI_SYSTEM.git
+
 cd saeed-ai
 
 # تثبيت المتطلبات
