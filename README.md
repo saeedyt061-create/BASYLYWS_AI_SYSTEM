@@ -39,7 +39,7 @@
 
 ```bash
 # استنساخ المستودع
-git clone https://github.com/saeedyt061-create/BASYLYWS_AI_SYSTEM.git
+git clone https://github.com/BASYLYWS/BASYLYWS_AI_SYSTEM.git
 
 cd BASYLYWS_AI_SYSTEM
 
