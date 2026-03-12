@@ -37,7 +37,7 @@ CORS(app)
 # تهيئة المحركات
 engines = {}
 
-@app.before_first_request
+@app.got_first_request
 def init_engines():
     """تهيئة المحركات قبل أول طلب"""
     if MODULES_AVAILABLE:
